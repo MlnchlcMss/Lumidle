@@ -1,0 +1,115 @@
+.quote-board {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+  background: transparent;
+  font-family: inherit;
+  color: #eee;
+}
+
+.quote-display {
+  font-size: 1.2rem;
+  font-style: italic;
+  text-align: center;
+  margin: 2rem 0;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0.5rem;
+  border-left: 4px solid #4a9eff;
+}
+
+.input-container {
+  position: relative;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.input-container input {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #444;
+  border-radius: 8px;
+  background: #2d2d2d;
+  color: #eee;
+  outline: none;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #2d2d2d;
+  border: 2px solid #444;
+  border-radius: 0 0 8px 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 10;
+}
+
+.dropdown li {
+  padding: 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #444;
+}
+
+.dropdown li:hover {
+  background: #3a3a3c;
+}
+
+.guess-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.quote-row {
+  display: flex;
+  justify-content: center;
+}
+
+.guess-cell {
+  min-width: 200px;
+  padding: 0.75rem 1rem;
+  background: #2d2d2d;
+  border: 2px solid #444;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.guess-cell.correct {
+  background: #538d4e;
+  border-color: #2e5a2a;
+}
+
+.guess-cell.incorrect {
+  background: #3a3a3c;
+  border-color: #2a2a2c;
+}
+
+.flip-animation {
+  animation: flipIn 0.6s ease forwards;
+  opacity: 0;
+  transform: rotateX(-90deg);
+}
+
+@keyframes flipIn {
+  0% { opacity: 0; transform: rotateX(-90deg); }
+  50% { opacity: 1; }
+  100% { opacity: 1; transform: rotateX(0deg); }
+}
+
+.message {
+  text-align: center;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: #2d2d2d;
+  border-radius: 4px;
+}

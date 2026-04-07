@@ -1,0 +1,169 @@
+.sfx-board {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+  background: transparent;
+  font-family: inherit;
+  color: #eee;
+}
+
+.sfx-header {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.play-button {
+  background: #4a9eff;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  padding: 1rem 2rem;
+  border-radius: 3rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.play-button:hover {
+  transform: scale(1.05);
+}
+
+.hint-section {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.hint {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.75rem 1.5rem;
+  border-radius: 2rem;
+  font-size: 1.1rem;
+}
+
+.hint.locked {
+  background: rgba(0, 0, 0, 0.3);
+  color: #888;
+}
+
+.skill-icon {
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
+}
+
+.input-container {
+  position: relative;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.input-container input {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #444;
+  border-radius: 8px;
+  background: #2d2d2d;
+  color: #eee;
+  outline: none;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #2d2d2d;
+  border: 2px solid #444;
+  border-radius: 0 0 8px 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 10;
+}
+
+.dropdown li {
+  padding: 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #444;
+}
+
+.dropdown li:hover {
+  background: #3a3a3c;
+}
+
+.guess-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.sfx-row {
+  display: flex;
+  justify-content: center;
+}
+
+.guess-cell {
+  min-width: 200px;
+  padding: 0.75rem 1rem;
+  background: #2d2d2d;
+  border: 2px solid #444;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.guess-cell.correct {
+  background: #538d4e;
+  border-color: #2e5a2a;
+}
+
+.guess-cell.incorrect {
+  background: #3a3a3c;
+  border-color: #2a2a2c;
+}
+
+.flip-animation {
+  animation: flipIn 0.6s ease forwards;
+  opacity: 0;
+  transform: rotateX(-90deg);
+}
+
+@keyframes flipIn {
+  0% {
+    opacity: 0;
+    transform: rotateX(-90deg);
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+    transform: rotateX(0deg);
+  }
+}
+
+.message {
+  text-align: center;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: #2d2d2d;
+  border-radius: 4px;
+}
+
+.hint.clickable {
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.hint.clickable:hover {
+  transform: scale(1.02);
+  background: rgba(74, 158, 255, 0.3);
+}
