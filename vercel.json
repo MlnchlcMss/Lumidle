@@ -18,8 +18,11 @@
       "dest": "lumidle_backend/api/index.js"
     },
     {
+      "handle": "filesystem"
+    },
+    {
       "src": "/(.*)",
-      "dest": "lumidle/dist/$1"
+      "dest": "lumidle/dist/index.html"
     }
   ]
 }
