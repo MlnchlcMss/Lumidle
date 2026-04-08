@@ -14,17 +14,37 @@ app.use(express.json());
 // Routes
 app.use('/api', apiRoutes);
 
-// MongoDB connection
-if (process.env.NODE_ENV !== 'production') {
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  })
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-  });
 
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
 }
+
+async function connectDB() {
+  if (cached.conn) return cached.conn;
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.MONGO_URI).then(() => mongoose.connection);
+  }
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('DB connection error', err);
+    res.status(500).json({ error: 'Database connection failed' });
+  }
+});
+
+
+if (process.env.NODE_ENV !== 'production') {
+  connectDB().then(() => {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  });
+}
+
 module.exports = app;

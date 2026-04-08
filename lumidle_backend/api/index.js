@@ -1,3 +1,3 @@
-const app = require('../server'); // Assuming your main Express app is exported from server.js
+const app = require('../server'); 
 
 module.exports = app;
