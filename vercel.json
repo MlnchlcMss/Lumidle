@@ -1,0 +1,22 @@
+{
+  "functions": {
+    "lumidle_backend/api/index.js": {
+      "includeFiles": "lumidle_backend/**"
+    }
+  },
+  "builds": [
+    {
+      "src": "lumidle/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    },
+    {
+      "src": "lumidle_backend/api/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "lumidle_backend/api/index.js" },
+    { "src": "/(.*)", "dest": "lumidle/dist/$1" }
+  ]
+}
