@@ -3,9 +3,7 @@
   "buildCommand": "cd lumidle && pnpm run build",
   "outputDirectory": "lumidle/dist",
   "framework": "vite",
-  "functions": {
-    "api/[...path].js": {
-      "includeFiles": "lumidle_backend/**"
-    }
-  }
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
 }
