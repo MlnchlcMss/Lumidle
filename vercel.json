@@ -13,11 +13,5 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "lumidle_backend/api/index.js" },
     { "src": "/(.*)", "dest": "lumidle/dist/$1" }
-  ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
   ]
 }
