@@ -1,4 +1,11 @@
-require('dotenv').config();
+// Only load dotenv in development - Vercel injects env vars automatically in production
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    require('dotenv').config();
+  } catch (e) {
+    // dotenv not available, skip
+  }
+}
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
