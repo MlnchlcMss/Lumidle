@@ -3,15 +3,13 @@
     {
       "src": "lumidle/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
-    },
-    {
-      "src": "lumidle_backend/api/index.js",
-      "use": "@vercel/node"
+      "config": {
+        "distDir": "dist"
+      }
     }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "lumidle_backend/api/index.js" },
-    { "src": "/(.*)", "dest": "lumidle/dist/$1" }
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
