@@ -7,6 +7,7 @@
     }
   ],
   "routes": [
+    { "src": "/", "dest": "lumidle/dist/index.html" },
     { "src": "/(.*)", "dest": "lumidle/dist/$1" }
   ]
 }
