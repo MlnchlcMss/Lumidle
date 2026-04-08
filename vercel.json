@@ -1,13 +1,25 @@
 {
   "builds": [
     {
-      "src": "champdle/package.json",
+      "src": "lumidle/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "lumidle_backend/api/index.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
-    { "src": "/", "dest": "/lumidle/index.html" },
-    { "src": "/lumidle/(.*)", "dest": "/$1" }
+    {
+      "src": "/api/(.*)",
+      "dest": "lumidle_backend/api/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "lumidle/dist/$1"
+    }
   ]
 }
