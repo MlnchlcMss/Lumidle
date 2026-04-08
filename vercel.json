@@ -1,28 +1,16 @@
 {
-  "builds": [
-    {
-      "src": "lumidle/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    },
-    {
-      "src": "lumidle_backend/api/index.js",
-      "use": "@vercel/node"
+  "buildCommand": "cd lumidle && npm install && npm run build",
+  "outputDirectory": "lumidle/dist",
+  "framework": "vite",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "lumidle_backend/**"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "lumidle_backend/api/index.js"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "lumidle/dist/index.html"
+      "source": "/api/:path*",
+      "destination": "/api"
     }
   ]
 }
