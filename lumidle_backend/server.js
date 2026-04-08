@@ -15,6 +15,7 @@ app.use(express.json());
 app.use('/api', apiRoutes);
 
 // MongoDB connection
+if (process.env.NODE_ENV !== 'production') {
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('Connected to MongoDB');
@@ -24,3 +25,6 @@ mongoose.connect(process.env.MONGO_URI)
     console.error('MongoDB connection error:', err);
     process.exit(1);
   });
+
+}
+module.exports = app;
