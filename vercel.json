@@ -3,14 +3,8 @@
   "outputDirectory": "lumidle/dist",
   "framework": "vite",
   "functions": {
-    "api/index.js": {
+    "api/[...path].js": {
       "includeFiles": "lumidle_backend/**"
     }
-  },
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api"
-    }
-  ]
+  }
 }

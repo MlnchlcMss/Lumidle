@@ -11,10 +11,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use('/api', apiRoutes);
-
-
 let cached = global.mongoose;
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
@@ -40,6 +36,8 @@ app.use(async (req, res, next) => {
   }
 });
 
+// Routes - must be after DB middleware
+app.use('/api', apiRoutes);
 
 if (process.env.NODE_ENV !== 'production') {
   connectDB().then(() => {
