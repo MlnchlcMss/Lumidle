@@ -10,5 +10,8 @@ router.get('/quote/today', quoteController.getTodayQuote);
 router.post('/guess-quote', quoteController.submitGuess);
 router.get('/sfx/today', sfxController.getTodaySFX);
 router.post('/guess-sfx', sfxController.submitGuess);
+router.get('/health', (req, res) => {
+  res.json({ status: 'ok', time: new Date().toISOString() });
+});
 
 module.exports = router;
