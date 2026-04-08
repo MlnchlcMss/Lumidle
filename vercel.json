@@ -1,6 +1,6 @@
 {
-  "installCommand": "npm install && cd lumidle && npm install",
-  "buildCommand": "cd lumidle && npm run build",
+  "installCommand": "pnpm install && cd lumidle && pnpm install",
+  "buildCommand": "cd lumidle && pnpm run build",
   "outputDirectory": "lumidle/dist",
   "framework": "vite",
   "functions": {
