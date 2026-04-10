@@ -15,10 +15,9 @@
   max-width: none;
   margin: 0;
   padding: 0;
-  text-align: left;
   width: 100%;
   min-height: 100vh;
-  
+
 }
 
 :root {
@@ -75,6 +74,8 @@ body::before {
   filter: blur(2px) brightness(0.5);
   z-index: -1;
   pointer-events: none;
+  min-width: 100%;
+  min-height: 100%;
 }
 
 .sidebar nav {
@@ -300,6 +301,8 @@ body::before {
     min-width: 0;
   }
 }
+
+
 
 .sidebar-logo {
   text-align: center;
