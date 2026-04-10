@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { encryptData, decryptData } from '../utils/obfuscate';
+import { testSubjects } from '../data/testSubjects';
+import { getDailyTestSubject } from '../utils/daily';
+import { compareTestSubject } from '../utils/compareLogic';
 import './GameBoard.css';
 
 
 const GameBoard = () => {
   const [targetId, setTargetId] = useState(null);
+  const [targetTestSubject, setTargetTestSubject] = useState(null);
   const [guesses, setGuesses] = useState([]);
   const [guessedNames, setGuessedNames] = useState(new Set());
   const [gameOver, setGameOver] = useState(false);
@@ -53,75 +56,30 @@ const GameBoard = () => {
     return `https://eternalreturn.fandom.com/wiki/${wikiName}`;
   };
 
-  
   useEffect(() => {
-    const loadDailyData = async () => {
-      const today = getTodayDate();
-      const cached = localStorage.getItem('characterDaily');
-      if (cached) {
-        try {
-          const { date, encryptedId } = JSON.parse(cached);
-          if (date === today) {
-            const decryptedId = decryptData(encryptedId);
-            setTargetId(decryptedId);
-            const listRes = await fetch('/api/TestSubjects');
-            if (listRes.ok) {
-              const listData = await listRes.json();
-              setAllTestSubjects(listData);
-              setFilteredTestSubjects(listData);
-            }
-            return;
-          }
-        } catch (e) {
-          console.warn('Failed to parse cached daily target', e);
-          localStorage.removeItem('characterDaily');
-        }
+  const today = getTodayDate();
+  const saved = localStorage.getItem('characterGameState');
+  if (saved) {
+    try {
+      const { date, guesses: savedGuesses, gameOver: savedGameOver, message: savedMessage } = JSON.parse(saved);
+      if (date === today) {
+        setGuesses(savedGuesses);
+        setGameOver(savedGameOver);
+        setMessage(savedMessage || '');
+        setGuessedNames(new Set(savedGuesses.map(g => g.name)));
+      } else {
+        localStorage.removeItem('characterGameState');
       }
+    } catch (e) {}
+  }
 
+  const dailyTestSubject = getDailyTestSubject(testSubjects);
+  setTargetTestSubject(dailyTestSubject); 
 
-      try {
-        const [targetRes, listRes] = await Promise.all([
-          fetch('/api/TestSubject/today'),
-          fetch('/api/TestSubjects')
-        ]);
-        if (!targetRes.ok || !listRes.ok) throw new Error('Failed to fetch data');
-        const targetData = await targetRes.json();
-        const listData = await listRes.json();
-
-        setTargetId(targetData.id);
-        setAllTestSubjects(listData);
-        setFilteredTestSubjects(listData);
-
-        const encryptedId = encryptData({ id: targetData.id });
-        console.log(today, getTodayDate());
-        localStorage.setItem('characterDaily', JSON.stringify({ date: getTodayDate(), encryptedId }));
-      } catch (err) {
-        console.error(err);
-        setMessage('Could not load game data');
-      }
-    };
-
-    loadDailyData();
-  }, []);
-
-  
-  useEffect(() => {
-    const stored = localStorage.getItem('characterGameState');
-    if (stored) {
-      try {
-        const { date, guesses: savedGuesses, gameOver: savedGameOver, message: savedMessage } = JSON.parse(stored);
-
-        if (date === getTodayDate()) {
-          setGuesses(savedGuesses);
-          setGameOver(savedGameOver);
-          setMessage(savedMessage || '');
-          setGuessedNames(new Set(savedGuesses.map(g => g.name)));
-        } else {
-          localStorage.removeItem('characterGameState');
-        }
-      } catch (e) { }
-    }
-  }, []);
+  const allNames = testSubjects.map(c => c.name);
+  setAllTestSubjects(allNames);
+  setFilteredTestSubjects(allNames);
+}, []);
 
   
   useEffect(() => {
@@ -162,77 +120,64 @@ const GameBoard = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const submitGuess = async (testSubjectName) => {
-    if (!testSubjectName || gameOver || isAnimating) return;
-    const today = getTodayDate();
-    const cachedCharacter = localStorage.getItem('characterDaily');
-    if (cachedCharacter) {
-      const { date } = JSON.parse(cachedCharacter);
-      if (date !== today) {
-        window.location.reload();
-        return;
-      }
-    }
+  const submitGuess = (testSubjectName) => {
+  if (!testSubjectName || gameOver || isAnimating) return;
 
+
+  const today = getTodayDate();
+  const cachedDaily = localStorage.getItem('characterDaily');
+  if (cachedDaily) {
+    const { date } = JSON.parse(cachedDaily);
+    if (date !== today) {
+      window.location.reload();
+      return;
+    }
+  }
     setIsAnimating(true);
     setAnimationCount(0);
     setShowDropdown(false);
-    try {
-      const res = await fetch('/api/guess', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ testSubjectName: testSubjectName })
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        setMessage(error.message || 'Invalid guess');
-        return;
-      }
-
-      const result = await res.json();
+  
+  const guessedTestSubject = testSubjects.find(c => c.name === testSubjectName);
+  if (!guessedTestSubject) {
+    setMessage('Invalid test subject name');
+    return;
+  }
 
 
-      const updatedGuesses = [{ name: testSubjectName, feedback: result.feedback }, ...guesses];
-
-      const newTotalGuesses = updatedGuesses.length;
-      let newGameOver = false;
-      let newMessage = '';
-      if (result.isCorrect) {
-        newGameOver = true;
-        newMessage = `You got it! The test subject was ${testSubjectName}`;
-      } else if (newTotalGuesses >= 10) {
-        newGameOver = true;
-        newMessage = 'Game over! Better luck tomorrow.';
-      }
-
-      setGuesses(updatedGuesses);
-      setGuessedNames(prev => new Set(prev).add(testSubjectName));
-
-      if (newGameOver) {
-        setGameOver(true);
-        setMessage(newMessage);
-        setPendingGameEnd({
-          isCorrect: result.isCorrect,
-          message: newMessage,
-          testSubjectName
-        });
-      } else {
-        setGameOver(false);
-        setMessage('');
-        setPendingGameEnd(null);
-      }
-
-      setInputValue('');
+  const result = compareTestSubject(guessedTestSubject, targetTestSubject);
 
 
-      saveGameState(updatedGuesses, newGameOver, newMessage);
+  const updatedGuesses = [{ name: testSubjectName, feedback: result.feedback }, ...guesses];
+  const newTotalGuesses = updatedGuesses.length;
+  let newGameOver = false;
+  let newMessage = '';
 
-    } catch (err) {
-      console.error(err);
-      setMessage('Error submitting guess');
-    }
-  };
+  if (result.isCorrect) {
+    newGameOver = true;
+    newMessage = `You got it! The test subject was ${testSubjectName}`;
+  } else if (newTotalGuesses >= 10) { 
+    newGameOver = true;
+    newMessage = `Game over! The answer was ${targetTestSubject.name}`;
+  }
+
+  setGuesses(updatedGuesses);
+  setGuessedNames(prev => new Set(prev).add(testSubjectName));
+  setInputValue('');
+
+
+  if (newGameOver) {
+    setGameOver(true);
+    setMessage(newMessage);
+    setPendingGameEnd({ isCorrect: result.isCorrect, message: newMessage, testSubjectName });
+  } else {
+    setGameOver(false);
+    setMessage('');
+    setPendingGameEnd(null);
+  }
+
+  
+  saveGameState(updatedGuesses, newGameOver, newMessage);
+};
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -323,7 +268,7 @@ const GameBoard = () => {
       'win5.webp'
     ];
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 40; i++) {
       const img = document.createElement('img');
       img.className = 'confetti-image';
       const randomImg = winImages[Math.floor(Math.random() * winImages.length)];
@@ -355,7 +300,7 @@ const GameBoard = () => {
       'lose5.webp'
     ];
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 40; i++) {
       const img = document.createElement('img');
       img.className = 'confetti-image';
       const randomImg = loseImages[Math.floor(Math.random() * loseImages.length)];

@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { encryptData, decryptData } from '../utils/obfuscate';
 import './QuoteBoard.css';
+import {quotes} from '../data/quotes';
+import { getDailyQuote } from '../utils/daily';
 
 const QuoteBoard = () => {
   const [quote, setQuote] = useState('');
+  const [targetSpeaker, setTargetSpeaker] = useState('');
   const [guesses, setGuesses] = useState([]);
   const [guessedNames, setGuessedNames] = useState(new Set());
   const [gameOver, setGameOver] = useState(false);
@@ -52,7 +54,7 @@ const QuoteBoard = () => {
       'win5.webp'
     ];
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 40; i++) {
       const img = document.createElement('img');
       img.className = 'confetti-image';
       const randomImg = winImages[Math.floor(Math.random() * winImages.length)];
@@ -82,7 +84,7 @@ const QuoteBoard = () => {
       'lose5.webp'
     ];
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 40; i++) {
       const img = document.createElement('img');
       img.className = 'confetti-image';
       const randomImg = loseImages[Math.floor(Math.random() * loseImages.length)];
@@ -105,66 +107,47 @@ const QuoteBoard = () => {
     }
   };
 
+  
+
+
   useEffect(() => {
-    const loadDailyData = async () => {
-      const today = getTodayDate();
-
-      const cached = localStorage.getItem('quoteDaily');
-      if (cached) {
-
-        try {
-          const { date, encrypted } = JSON.parse(cached);
-          if (date === today) {
-            const decrypted = await decryptData(encrypted);
-            setQuote(decrypted.text);
-
-            const listRes = await fetch('/api/TestSubjects');
-            if (listRes.ok) {
-              const listData = await listRes.json();
-              const baseNames = [...new Set(listData.map(name => getBaseName(name)))];
-              baseNames.sort((a, b) => a.localeCompare(b));
-
-              setAllTestSubjects(baseNames);
-              setFilteredTestSubjects(baseNames);
-            }
-            return;
-          }
-        } catch (e) {
-          console.warn('Failed to parse cached daily target', e);
-          localStorage.removeItem('quoteDaily');
-        }
-      }
-
-      // No valid cache – fetch fresh
-      try {
-
-        const [quoteRes, testSubjectRes] = await Promise.all([
-          fetch('/api/quote/today'),
-          fetch('/api/TestSubjects')
-        ]);
-        if (!quoteRes.ok || !testSubjectRes.ok) throw new Error('Failed to fetch data');
-        const quoteData = await quoteRes.json();
-        const testSubjectData = await testSubjectRes.json();
-
-
-        const baseNames = [...new Set(testSubjectData.map(name => getBaseName(name)))];
-        baseNames.sort((a, b) => a.localeCompare(b));
-
-        setQuote(quoteData.text);
-        setAllTestSubjects(baseNames);
-        setFilteredTestSubjects(baseNames);
-
-        const encrypted = encryptData({ id: quoteData.id, text: quoteData.text });
-        localStorage.setItem('quoteDaily', JSON.stringify({ date: today, encrypted }));
-      } catch (err) {
-        console.error(err);
-        setMessage('Could not load game data');
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target) &&
+        inputRef.current && !inputRef.current.contains(e.target)) {
+        setShowDropdown(false);
       }
     };
-
-    loadDailyData();
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const today = getTodayDate();
+    const stored = localStorage.getItem('quoteGameState');
+    if (stored) {
+      try {
+        const { date, guesses: savedGuesses, gameOver: savedGameOver, message: savedMessage } = JSON.parse(stored);
+        if (date === getTodayDate()) {
+          setGuesses(savedGuesses);
+          setGameOver(savedGameOver);
+          setMessage(savedMessage || '');
+          setGuessedNames(new Set(savedGuesses.map(g => g.name)));
+        } else {
+          localStorage.removeItem('quoteGameState');
+        }
+      } catch (e) { }
+    }
+
+      const daily = getDailyQuote(quotes);
+      setQuote(daily.text);
+      setTargetSpeaker(daily.speaker);  
+
+      localStorage.setItem('quoteDaily', JSON.stringify({ date: today }));
+      const allSpeakers = [...new Set(quotes.map(q => q.speaker))];
+      setAllTestSubjects(allSpeakers);
+      setFilteredTestSubjects(allSpeakers);
+
+  }, []);
 
   useEffect(() => {
     if (!allTestSubjects.length) return;
@@ -185,35 +168,6 @@ const QuoteBoard = () => {
     setFilteredTestSubjects(filtered);
   }, [inputValue, allTestSubjects, guessedNames]);
 
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target) &&
-        inputRef.current && !inputRef.current.contains(e.target)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('quoteGameState');
-    if (stored) {
-      try {
-        const { date, guesses: savedGuesses, gameOver: savedGameOver, message: savedMessage } = JSON.parse(stored);
-        if (date === getTodayDate()) {
-          setGuesses(savedGuesses);
-          setGameOver(savedGameOver);
-          setMessage(savedMessage || '');
-          setGuessedNames(new Set(savedGuesses.map(g => g.name)));
-        } else {
-          localStorage.removeItem('quoteGameState');
-        }
-      } catch (e) { }
-    }
-  }, []);
-
   const saveGameState = (guessesToSave, gameOverToSave, messageToSave) => {
     const state = {
       date: getTodayDate(),
@@ -224,71 +178,55 @@ const QuoteBoard = () => {
     localStorage.setItem('quoteGameState', JSON.stringify(state));
   };
 
-  const submitGuess = async (testSubjectName) => {
-    if (!testSubjectName || gameOver || isAnimating) return;
-    const today = getTodayDate();
-    const cachedQuote = localStorage.getItem('quoteDaily');
-    if (cachedQuote) {
-      const { date } = JSON.parse(cachedQuote);
-      if (date !== today) {
-        window.location.reload();
-        return;
-      }
+  const submitGuess = (testSubjectName) => {
+  if (!testSubjectName || gameOver || isAnimating) return;
+
+  const today = getTodayDate();
+  const cachedQuote = localStorage.getItem('quoteDaily');
+  if (cachedQuote) {
+    const { date } = JSON.parse(cachedQuote);
+    if (date !== today) {
+      window.location.reload();
+      return;
     }
-    setIsAnimating(true);
-    setAnimationCount(0);
-    setShowDropdown(false);
+  }
 
-    try {
-      const res = await fetch('/api/guess-quote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ testSubjectName: testSubjectName })
-      });
+  setIsAnimating(true);
+  setAnimationCount(0);
+  setShowDropdown(false);
 
-      const result = await res.json();
+  
+  const isCorrect = testSubjectName === targetSpeaker;
 
-      if (!res.ok) {
-        setMessage(result.error || 'Invalid guess');
-        setIsAnimating(false);
-        return;
-      }
+  const updatedGuesses = [{ name: testSubjectName, correct: isCorrect }, ...guesses];
+  const newTotal = updatedGuesses.length;
+  let newGameOver = false;
+  let newMessage = '';
 
+  if (isCorrect) {
+    newGameOver = true;
+    newMessage = `You got it! The speaker was ${testSubjectName}`;
+  } else if (newTotal >= 5) { 
+    newGameOver = true;
+    newMessage = `Game over! The answer was ${targetSpeaker}`;
+  }
 
-      const updatedGuesses = [{ name: testSubjectName, correct: result.isCorrect }, ...guesses];
-      const newTotal = updatedGuesses.length;
-      let newGameOver = false;
-      let newMessage = '';
+  setGuesses(updatedGuesses);
+  setGuessedNames(prev => new Set(prev).add(testSubjectName));
 
-      if (result.isCorrect) {
-        newGameOver = true;
-        newMessage = `You got it! The speaker was ${testSubjectName}`;
-      } else if (newTotal >= 5) {
-        newGameOver = true;
-        newMessage = 'Game over! Better luck tomorrow.';
-      }
+  if (newGameOver) {
+    setGameOver(true);
+    setMessage(newMessage);
+    setPendingGameEnd({ isCorrect, message: newMessage, testSubjectName });
+  } else {
+    setGameOver(false);
+    setMessage('');
+    setPendingGameEnd(null);
+  }
 
-      setGuesses(updatedGuesses);
-      setGuessedNames(prev => new Set(prev).add(testSubjectName));
-
-      if (newGameOver) {
-        setGameOver(true);
-        setMessage(newMessage);
-        setPendingGameEnd({ isCorrect: result.isCorrect, message: newMessage, testSubjectName });
-      } else {
-        setGameOver(false);
-        setMessage('');
-        setPendingGameEnd(null);
-      }
-
-
-      setInputValue('');
-      saveGameState(updatedGuesses, newGameOver, newMessage);
-    } catch (err) {
-      setMessage('Error submitting guess');
-      setIsAnimating(false);
-    }
-  };
+  setInputValue('');
+  saveGameState(updatedGuesses, newGameOver, newMessage);
+};
 
   const handleCellAnimationEnd = () => {
     setAnimationCount(prev => {

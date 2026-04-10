@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { decryptData, decryptDataSfx } from '../utils/obfuscate';
+import {sfxList} from '../data/sfx';
+import { getDailySFX } from '../utils/daily';
 import './SFXBoard.css';
 
 const getBaseName = (fullName) => {
@@ -49,7 +50,7 @@ const SFXBoard = () => {
       'win4.webp',
       'win5.webp'
     ];
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 40; i++) {
       const img = document.createElement('img');
       img.className = 'confetti-image';
       img.src = `confetti/win/${winImages[Math.floor(Math.random() * winImages.length)]}`;
@@ -72,7 +73,7 @@ const SFXBoard = () => {
       'lose4.webp',
       'lose5.webp'
     ];
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 40; i++) {
       const img = document.createElement('img');
       img.className = 'confetti-image';
       img.src = `/confetti/lose/${loseImages[Math.floor(Math.random() * loseImages.length)]}`;
@@ -90,62 +91,9 @@ const SFXBoard = () => {
   }
 };
 
-  useEffect(() => {
-    const loadSFX = async () => {
-      const today = getTodayDate();
-
-      const cached = localStorage.getItem('sfxDaily');
-      if (cached) {
-        try {
-          const { date, encryptedResponse } = JSON.parse(cached);
-          if (date === today) {
-            const decrypted = await decryptDataSfx(encryptedResponse, date);
-            setDailySFX(decrypted);
-            const testSubjectRes = await fetch('/api/TestSubjects');
-            if (testSubjectRes.ok) {
-              const testSubjectData = await testSubjectRes.json();
-              const baseNames = [...new Set(testSubjectData.map(getBaseName))];
-              baseNames.sort((a, b) => a.localeCompare(b));
-              setAllTestSubjects(baseNames);
-              setFilteredTestSubjects(baseNames);
-            }
-            return;
-          }
-        } catch (e) {
-          console.warn('Failed to parse cached SFX', e);
-          localStorage.removeItem('sfxDaily');
-        }
-      }
-
-
-      try {
-        const [sfxRes, testSubjectRes] = await Promise.all([
-          fetch('/api/sfx/today'),
-          fetch('/api/TestSubjects')
-        ]);
-        if (!sfxRes.ok || !testSubjectRes.ok) throw new Error('Failed to fetch');
-
-        const { encrypted, date } = await sfxRes.json();
-        const decrypted = await decryptDataSfx(encrypted, date);
-        setDailySFX(decrypted);
-
-        const testSubjectData = await testSubjectRes.json();
-        const baseNames = [...new Set(testSubjectData.map(getBaseName))];
-        baseNames.sort((a, b) => a.localeCompare(b));
-        setAllTestSubjects(baseNames);
-        setFilteredTestSubjects(baseNames);
-
-        localStorage.setItem('sfxDaily', JSON.stringify({ date, encryptedResponse: encrypted }));
-      } catch (err) {
-        console.error(err);
-        setMessage('Could not load SFX data');
-      }
-    };
-
-    loadSFX();
-  }, []);
 
   useEffect(() => {
+    const today = getTodayDate();
     const stored = localStorage.getItem('sfxGameState');
     if (stored) {
       try {
@@ -163,6 +111,16 @@ const SFXBoard = () => {
         }
       } catch (e) { }
     }
+
+  const daily = getDailySFX(sfxList);
+  setDailySFX(daily);  
+
+  localStorage.setItem('sfxDaily', JSON.stringify({ date: today }));
+
+  const allTestSubs = [...new Set(sfxList.map(s => s.testSubject))];
+  setAllTestSubjects(allTestSubs);
+  setFilteredTestSubjects(allTestSubs);
+  
   }, []);
 
   const saveGameState = (guessesToSave, gameOverToSave, messageToSave, skillRevealed, iconRevealed) => {
@@ -220,73 +178,62 @@ const SFXBoard = () => {
       saveGameState(guesses, gameOver, message, hintSkillRevealed, true);
     }
   };
-  const submitGuess = async (testSubjectName) => {
-    if (!testSubjectName || gameOver || isAnimating) return;
 
-    const today = getTodayDate();
-    const cachedSfx = localStorage.getItem('sfxDaily');
-    if (cachedSfx) {
-      const { date } = JSON.parse(cachedSfx);
-      if (date !== today) {
-        window.location.reload();
-        return;
-      }
+  const submitGuess = (testSubjectName) => {
+  if (!testSubjectName || gameOver || isAnimating) return;
+
+  const today = getTodayDate();
+  const cachedSfx = localStorage.getItem('sfxDaily');
+  if (cachedSfx) {
+    const { date } = JSON.parse(cachedSfx);
+    if (date !== today) {
+      window.location.reload();
+      return;
     }
-    setIsAnimating(true);
-    setAnimationCount(0);
-    setShowDropdown(false);
+  }
 
-    try {
-      const res = await fetch('/api/guess-sfx', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ testSubjectName: testSubjectName })
-      });
-      const result = await res.json();
-      if (!res.ok) {
-        setMessage(result.error || 'Invalid guess');
-        setIsAnimating(false);
-        return;
-      }
+  setIsAnimating(true);
+  setAnimationCount(0);
+  setShowDropdown(false);
 
-      const updatedGuesses = [{ name: testSubjectName, correct: result.isCorrect }, ...guesses];
-      const newTotal = updatedGuesses.length;
+  const isCorrect = testSubjectName === dailySFX.testSubject;
 
-      let newGameOver = false;
-      let newMessage = '';
-      if (result.isCorrect) {
-        newGameOver = true;
-        newMessage = `Correct! The skill belongs to ${result.testSubject}`;
-      } else if (newTotal >= 6) {
-        newGameOver = true;
-        newMessage = 'Game over! Better luck tomorrow.';
-      }
+  const updatedGuesses = [{ name: testSubjectName, correct: isCorrect }, ...guesses];
+  const newTotal = updatedGuesses.length;
+  let newGameOver = false;
+  let newMessage = '';
 
-      setGuesses(updatedGuesses);
-      setGuessedNames(prev => new Set(prev).add(testSubjectName));
-      const finalSkillRevealed = newGameOver ? true : hintSkillRevealed;
-      const finalIconRevealed = newGameOver ? true : hintIconRevealed;
+  if (isCorrect) {
+    newGameOver = true;
+    newMessage = `Correct! The skill belongs to ${testSubjectName}`;
+  } else if (newTotal >= 6) { 
+    newGameOver = true;
+    newMessage = `Game over! The answer was ${dailySFX.testSubject}`;
+  }
 
-      if (newGameOver) {
-        setGameOver(true);
-        setMessage(newMessage);
-        setHintSkillRevealed(true);
-        setHintIconRevealed(true);
-        setPendingGameEnd({ isCorrect: result.isCorrect, message: newMessage });
-      } else {
-        setGameOver(false);
-        setMessage('');
-        setPendingGameEnd(null);
-      }
-      setInputValue('');
-      setHintSkillRevealed(finalSkillRevealed);
-      setHintIconRevealed(finalIconRevealed);
-      saveGameState(updatedGuesses, newGameOver, newMessage, finalSkillRevealed, finalIconRevealed);
-    } catch (err) {
-      setMessage('Error submitting guess');
-      setIsAnimating(false);
-    }
-  };
+  setGuesses(updatedGuesses);
+  setGuessedNames(prev => new Set(prev).add(testSubjectName));
+
+  const finalSkillRevealed = newGameOver ? true : hintSkillRevealed;
+  const finalIconRevealed = newGameOver ? true : hintIconRevealed;
+
+  if (newGameOver) {
+    setGameOver(true);
+    setMessage(newMessage);
+    setHintSkillRevealed(true);
+    setHintIconRevealed(true);
+    setPendingGameEnd({ isCorrect, message: newMessage });
+  } else {
+    setGameOver(false);
+    setMessage('');
+    setPendingGameEnd(null);
+  }
+
+  setInputValue('');
+  setHintSkillRevealed(finalSkillRevealed);
+  setHintIconRevealed(finalIconRevealed);
+  saveGameState(updatedGuesses, newGameOver, newMessage, finalSkillRevealed, finalIconRevealed);
+};
 
   const handleCellAnimationEnd = () => {
     setAnimationCount(prev => {

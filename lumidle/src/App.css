@@ -28,7 +28,7 @@
   --accent-secondary: #94a3b8;
   --accent-gold: #fbbf24;
   --foreground: #eee;
-  --background: #1a1a1a;
+  --background:#1a1a1a;
   --green-correct: #538d4e;
   --yellow-partial: #b59f3b;
   --red-incorrect: #b33a3a;
@@ -72,8 +72,7 @@ body::before {
   background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
-  filter: blur(2px);
-  opacity: 0.4;
+  filter: blur(2px) brightness(0.5);
   z-index: -1;
   pointer-events: none;
 }
