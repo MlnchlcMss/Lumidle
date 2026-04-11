@@ -18,7 +18,7 @@ export const testSubjects = [
     difficulty: 5,
     releaseDate: new Date('2023-03-03'),
     age: 25,
-    scaling1: { name: 'SKILL AMP', value: 4.7 },
+    scaling1: { name: 'SKILL AMP', value: 4.6 },
     scaling2: { name: 'ASPD', value: 3.5 }
   },
   {
@@ -227,7 +227,7 @@ export const testSubjects = [
     difficulty: 3,
     releaseDate: new Date('2021-09-30'),
     age: 21,
-    scaling1: { name: 'BA AMP', value: 1.5 },
+    scaling1: { name: 'BA AMP', value: 1.4 },
     scaling2: { name: 'ASPD', value: 2.6  }
   },
   {
@@ -295,6 +295,17 @@ export const testSubjects = [
     age: 24,
     scaling1: { name: 'BA AMP', value: 1.4 },
     scaling2: { name: 'ASPD', value: 3.1  }
+  },
+  {
+    name: 'Coraline',
+    gender: 'Female',
+    weapon: 'Arcana',
+    roles: ['Mage'],
+    difficulty: 4,
+    releaseDate: new Date('2026-03-19'),
+    age: 19,
+    scaling1: { name: 'SKILL AMP', value: 4.0 },
+    scaling2: { name: 'ASPD', value: 3.0  }
   },
   {
     name: 'Daniel',
@@ -436,7 +447,7 @@ export const testSubjects = [
     difficulty: 4,
     releaseDate: new Date('2019-10-11'),
     age: 24,
-    scaling1: { name: 'SKILL AMP', value: 4.8 },
+    scaling1: { name: 'SKILL AMP', value: 4.2 },
     scaling2: { name: 'ASPD', value: 3.0  }
   },
   {
@@ -557,7 +568,7 @@ export const testSubjects = [
     difficulty: 1,
     releaseDate: new Date('2019-05-18'),
     age: 17,
-    scaling1: { name: 'SKILL AMP', value: 4.3 },
+    scaling1: { name: 'SKILL AMP', value: 4.5 },
     scaling2: { name: 'ASPD', value: 2.6  }
   },
   {
@@ -569,7 +580,7 @@ export const testSubjects = [
     releaseDate: new Date('2022-12-07'),
     age: null,
     scaling1: { name: 'SKILL AMP', value: 4.8 },
-    scaling2: { name: 'ASPD', value: 1.6  }
+    scaling2: { name: 'ASPD', value: 2.2  }
   },
   {
     name: 'Isaac',
@@ -601,7 +612,7 @@ export const testSubjects = [
     difficulty: 4,
     releaseDate: new Date('2020-06-24'),
     age: 16,
-    scaling1: { name: 'SKILL AMP', value: 4.4 },
+    scaling1: { name: 'SKILL AMP', value: 4.5 },
     scaling2: { name: 'ASPD', value: 4.5  }
   },
   {
@@ -756,7 +767,7 @@ export const testSubjects = [
     releaseDate: new Date('2022-02-17'),
     age: 27,
     scaling1: { name: 'SKILL AMP', value: 4.0 },
-    scaling2: { name: 'ASPD', value: 2.8 }
+    scaling2: { name: 'ASPD', value: 3.3 }
   },
   {
     name: 'Leni',
@@ -898,7 +909,7 @@ export const testSubjects = [
     difficulty: 2,
     releaseDate: new Date('2022-05-25'),
     age: 28,
-    scaling1: { name: 'BA AMP', value: 1.8 },
+    scaling1: { name: 'BA AMP', value: 1.9 },
     scaling2: { name: 'ASPD', value: 3.0  }
   },
   {
@@ -1162,7 +1173,7 @@ export const testSubjects = [
     difficulty: 5,
     releaseDate: new Date('2021-06-24'),
     age: 28,
-    scaling1: { name: 'BA AMP', value: 1.6 },
+    scaling1: { name: 'BA AMP', value: 1.4 },
     scaling2: { name: 'ASPD', value: 3.1  }
   },
   {
@@ -1173,8 +1184,8 @@ export const testSubjects = [
     difficulty: 3,
     releaseDate: new Date('2020-08-12'),
     age: 34,
-    scaling1: { name: 'SKILL AMP', value: 4.1 },
-    scaling2: { name: 'ASPD', value: 3.0  }
+    scaling1: { name: 'SKILL AMP', value: 4.4 },
+    scaling2: { name: 'ASPD', value: 4.0  }
   },
   {
     name: 'Xiukai (Dagger)',

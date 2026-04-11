@@ -110,6 +110,12 @@ export const sfxList = [
   { testSubject: 'Chloe', skillName: "Puppet Theatre", sfxFile: '/sfx/chloe-w.mp3', iconFile: '/icons/91.webp' },
   { testSubject: 'Chloe', skillName: "Seam Ripper", sfxFile: '/sfx/chloe-e.mp3', iconFile: '/icons/92.webp' },
   { testSubject: 'Chloe', skillName: "Soul Link", sfxFile: '/sfx/chloe-r.mp3', iconFile: '/icons/93.webp' },
+
+  { testSubject: 'Coraline', skillName: "Causality's Reflection", sfxFile: '/sfx/coraline-p.mp3', iconFile: '/icons/420.webp' },
+  { testSubject: 'Coraline', skillName: "Flash of Condemnation", sfxFile: '/sfx/coraline-q.mp3', iconFile: '/icons/421.webp' },
+  { testSubject: 'Coraline', skillName: "Mirror of Truth / Mirror of Falsehood", sfxFile: '/sfx/coraline-w.mp3', iconFile: '/icons/422.webp' },
+  { testSubject: 'Coraline', skillName: "Shackles of Sin", sfxFile: '/sfx/coraline-e.mp3', iconFile: '/icons/423.webp' },
+  { testSubject: 'Coraline', skillName: "Refracted Afterimage", sfxFile: '/sfx/coraline-r.mp3', iconFile: '/icons/424.webp' },
   
   { testSubject: 'Daniel', skillName: "Dusk Shears", sfxFile: '/sfx/daniel-q.mp3', iconFile: '/icons/94.webp' },
   { testSubject: 'Daniel', skillName: "Inspiration", sfxFile: '/sfx/daniel-w.mp3', iconFile: '/icons/95.webp' },
