@@ -135,9 +135,7 @@ function App() {
                   onClick={copyEmail}>
                   <img src="/socials/email.svg" alt="Email" className="social-icon-img" />
                 </div>
-                <a href="https://github.com/MlnchlcMss" target="_blank" rel="noopener noreferrer">
-                  <img src="socials/github.svg" alt="GitHub" className="social-icon-img" />
-                </a>
+              
               </div>
               <div className="footer-trademark">
                 Not affiliated with Nimble Neuron. Eternal Return is a trademark of Nimble Neuron, inc. or its affiliates.
