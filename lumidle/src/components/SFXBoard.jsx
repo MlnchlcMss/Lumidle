@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {sfxList} from '../data/sfx';
+import { sfxList } from '../data/sfx';
 import { getDailySFX } from '../utils/daily';
+import { endlessCache } from '../utils/endlessCache';
 import './SFXBoard.css';
 
 const getBaseName = (fullName) => {
@@ -86,14 +87,52 @@ const SFXBoard = () => {
   };
 
   const handleKeyDown = (e) => {
-  if (e.key === 'Enter' && filteredTestSubjects.length > 0 && !gameOver && !isAnimating) {
-    submitGuess(filteredTestSubjects[0]);
-  }
-};
+    if (e.key === 'Enter' && filteredTestSubjects.length > 0 && !gameOver && !isAnimating) {
+      submitGuess(filteredTestSubjects[0]);
+    }
+  };
+
+  const getEndlessSFX = () => {
+    const key = 'endless_sfx_sua_pics';
+    const stored = sessionStorage.getItem(key);
+    if (stored) {
+      return JSON.parse(stored);
+    } else {
+      const randomIndex = Math.floor(Math.random() * sfxList.length);
+      const randomSFX = sfxList[randomIndex];
+      sessionStorage.setItem(key, JSON.stringify(randomSFX));
+      return randomSFX;
+    }
+  };
 
 
   useEffect(() => {
     const today = getTodayDate();
+    const endless = localStorage.getItem('endlessMode') === 'true';
+
+    if (endless) {
+      if (!endlessCache.sfx.data) {
+        const randomIndex = Math.floor(Math.random() * sfxList.length);
+        endlessCache.sfx.data = sfxList[randomIndex];
+        endlessCache.sfx.guesses = [];
+        endlessCache.sfx.gameOver = false;
+        endlessCache.sfx.message = '';
+        endlessCache.sfx.hintSkillRevealed = false;
+        endlessCache.sfx.hintIconRevealed = false;
+      }
+      const cached = endlessCache.sfx;
+      setDailySFX(cached.data);
+      setAllTestSubjects([...new Set(sfxList.map(s => s.testSubject))]);
+      setFilteredTestSubjects([...new Set(sfxList.map(s => s.testSubject))]);
+      setGuesses(cached.guesses);
+      setGameOver(cached.gameOver);
+      setMessage(cached.message);
+      setHintSkillRevealed(cached.hintSkillRevealed);
+      setHintIconRevealed(cached.hintIconRevealed);
+      setGuessedNames(new Set(cached.guesses.map(g => g.name)));
+      return;
+    }
+
     const stored = localStorage.getItem('sfxGameState');
     if (stored) {
       try {
@@ -112,15 +151,15 @@ const SFXBoard = () => {
       } catch (e) { }
     }
 
-  const daily = getDailySFX(sfxList);
-  setDailySFX(daily);  
+    const daily = getDailySFX(sfxList);
+    setDailySFX(daily);
 
-  localStorage.setItem('sfxDaily', JSON.stringify({ date: today }));
+    localStorage.setItem('sfxDaily', JSON.stringify({ date: today }));
 
-  const allTestSubs = [...new Set(sfxList.map(s => s.testSubject))];
-  setAllTestSubjects(allTestSubs);
-  setFilteredTestSubjects(allTestSubs);
-  
+    const allTestSubs = [...new Set(sfxList.map(s => s.testSubject))];
+    setAllTestSubjects(allTestSubs);
+    setFilteredTestSubjects(allTestSubs);
+
   }, []);
 
   const saveGameState = (guessesToSave, gameOverToSave, messageToSave, skillRevealed, iconRevealed) => {
@@ -180,60 +219,68 @@ const SFXBoard = () => {
   };
 
   const submitGuess = (testSubjectName) => {
-  if (!testSubjectName || gameOver || isAnimating) return;
-
-  const today = getTodayDate();
-  const cachedSfx = localStorage.getItem('sfxDaily');
-  if (cachedSfx) {
-    const { date } = JSON.parse(cachedSfx);
-    if (date !== today) {
-      window.location.reload();
-      return;
+    if (!testSubjectName || gameOver || isAnimating) return;
+    const endless = localStorage.getItem('endlessMode') === 'true';
+    const today = getTodayDate();
+    const cachedSfx = localStorage.getItem('sfxDaily');
+    if (cachedSfx) {
+      const { date } = JSON.parse(cachedSfx);
+      if (date !== today) {
+        window.location.reload();
+        return;
+      }
     }
-  }
 
-  setIsAnimating(true);
-  setAnimationCount(0);
-  setShowDropdown(false);
+    setIsAnimating(true);
+    setAnimationCount(0);
+    setShowDropdown(false);
 
-  const isCorrect = testSubjectName === dailySFX.testSubject;
+    const isCorrect = testSubjectName === dailySFX.testSubject;
 
-  const updatedGuesses = [{ name: testSubjectName, correct: isCorrect }, ...guesses];
-  const newTotal = updatedGuesses.length;
-  let newGameOver = false;
-  let newMessage = '';
+    const updatedGuesses = [{ name: testSubjectName, correct: isCorrect }, ...guesses];
+    const newTotal = updatedGuesses.length;
+    let newGameOver = false;
+    let newMessage = '';
 
-  if (isCorrect) {
-    newGameOver = true;
-    newMessage = `Correct! The skill belongs to ${testSubjectName}`;
-  } else if (newTotal >= 6) { 
-    newGameOver = true;
-    newMessage = `Game over! The answer was ${dailySFX.testSubject}`;
-  }
+    if (isCorrect) {
+      newGameOver = true;
+      newMessage = `Correct! The skill belongs to ${testSubjectName}`;
+    } else if (newTotal >= 6) {
+      newGameOver = true;
+      newMessage = `Game over! The answer was ${dailySFX.testSubject}`;
+    }
 
-  setGuesses(updatedGuesses);
-  setGuessedNames(prev => new Set(prev).add(testSubjectName));
+    setGuesses(updatedGuesses);
+    setGuessedNames(prev => new Set(prev).add(testSubjectName));
 
-  const finalSkillRevealed = newGameOver ? true : hintSkillRevealed;
-  const finalIconRevealed = newGameOver ? true : hintIconRevealed;
+    const finalSkillRevealed = newGameOver ? true : hintSkillRevealed;
+    const finalIconRevealed = newGameOver ? true : hintIconRevealed;
 
-  if (newGameOver) {
-    setGameOver(true);
-    setMessage(newMessage);
-    setHintSkillRevealed(true);
-    setHintIconRevealed(true);
-    setPendingGameEnd({ isCorrect, message: newMessage });
-  } else {
-    setGameOver(false);
-    setMessage('');
-    setPendingGameEnd(null);
-  }
+    if (newGameOver) {
+      setGameOver(true);
+      setMessage(newMessage);
+      setHintSkillRevealed(true);
+      setHintIconRevealed(true);
+      setPendingGameEnd({ isCorrect, message: newMessage });
+    } else {
+      setGameOver(false);
+      setMessage('');
+      setPendingGameEnd(null);
+    }
 
-  setInputValue('');
-  setHintSkillRevealed(finalSkillRevealed);
-  setHintIconRevealed(finalIconRevealed);
-  saveGameState(updatedGuesses, newGameOver, newMessage, finalSkillRevealed, finalIconRevealed);
-};
+    setInputValue('');
+    setHintSkillRevealed(finalSkillRevealed);
+    setHintIconRevealed(finalIconRevealed);
+    if (endless) {
+      endlessCache.sfx.guesses = updatedGuesses;
+      endlessCache.sfx.gameOver = newGameOver;
+      endlessCache.sfx.message = newMessage;
+      endlessCache.sfx.hintSkillRevealed = finalSkillRevealed;
+      endlessCache.sfx.hintIconRevealed = finalIconRevealed;
+    } else {
+      saveGameState(updatedGuesses, newGameOver, newMessage, finalSkillRevealed, finalIconRevealed);
+    }
+  };
 
   const handleCellAnimationEnd = () => {
     setAnimationCount(prev => {

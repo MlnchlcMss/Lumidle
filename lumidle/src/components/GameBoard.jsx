@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { testSubjects } from '../data/testSubjects';
 import { getDailyTestSubject } from '../utils/daily';
 import { compareTestSubject } from '../utils/compareLogic';
+import { endlessCache } from '../utils/endlessCache';
 import './GameBoard.css';
 
 
@@ -56,32 +57,66 @@ const GameBoard = () => {
     return `https://eternalreturn.fandom.com/wiki/${wikiName}`;
   };
 
+  const getEndlessTestSubject = () => {
+    const key = 'endless_sua_pics';
+    const stored = sessionStorage.getItem(key);
+    if (stored) {
+      return JSON.parse(stored);
+    } else {
+      const randomIndex = Math.floor(Math.random() * testSubjects.length);
+      const randomTestSubject = testSubjects[randomIndex];
+      sessionStorage.setItem(key, JSON.stringify(randomTestSubject));
+      return randomTestSubject;
+    }
+  };
+
   useEffect(() => {
-  const today = getTodayDate();
-  const saved = localStorage.getItem('characterGameState');
-  if (saved) {
-    try {
-      const { date, guesses: savedGuesses, gameOver: savedGameOver, message: savedMessage } = JSON.parse(saved);
-      if (date === today) {
-        setGuesses(savedGuesses);
-        setGameOver(savedGameOver);
-        setMessage(savedMessage || '');
-        setGuessedNames(new Set(savedGuesses.map(g => g.name)));
-      } else {
-        localStorage.removeItem('characterGameState');
+    const today = getTodayDate();
+    const endless = localStorage.getItem('endlessMode') === 'true';
+
+    if (endless) {
+      if (!endlessCache.testSubject.data) {
+        const randomIndex = Math.floor(Math.random() * testSubjects.length);
+        endlessCache.testSubject.data = testSubjects[randomIndex];
+        endlessCache.testSubject.guesses = [];
+        endlessCache.testSubject.gameOver = false;
+        endlessCache.testSubject.message = '';
       }
-    } catch (e) {}
-  }
+      const cached = endlessCache.testSubject;
+      setTargetTestSubject(cached.data);
+      setGuesses(cached.guesses);
+      setGameOver(cached.gameOver);
+      setMessage(cached.message);
+      setGuessedNames(new Set(cached.guesses.map(g => g.name)));
+      setAllTestSubjects(testSubjects.map(c => c.name));
+      setFilteredTestSubjects(testSubjects.map(c => c.name));
+      return;
+    }
 
-  const dailyTestSubject = getDailyTestSubject(testSubjects);
-  setTargetTestSubject(dailyTestSubject); 
+    const saved = localStorage.getItem('characterGameState');
+    if (saved) {
+      try {
+        const { date, guesses: savedGuesses, gameOver: savedGameOver, message: savedMessage } = JSON.parse(saved);
+        if (date === today) {
+          setGuesses(savedGuesses);
+          setGameOver(savedGameOver);
+          setMessage(savedMessage || '');
+          setGuessedNames(new Set(savedGuesses.map(g => g.name)));
+        } else {
+          localStorage.removeItem('characterGameState');
+        }
+      } catch (e) { }
+    }
 
-  const allNames = testSubjects.map(c => c.name);
-  setAllTestSubjects(allNames);
-  setFilteredTestSubjects(allNames);
-}, []);
+    const dailyTestSubject = getDailyTestSubject(testSubjects);
+    setTargetTestSubject(dailyTestSubject);
+    const allNames = testSubjects.map(c => c.name);
+    localStorage.setItem('characterDaily', JSON.stringify({ date: today }));
+    setAllTestSubjects(allNames);
+    setFilteredTestSubjects(allNames);
+  }, []);
 
-  
+
   useEffect(() => {
     if (!allTestSubjects.length) return;
 
@@ -108,7 +143,7 @@ const GameBoard = () => {
     setFilteredTestSubjects(filtered);
   }, [inputValue, allTestSubjects, guessedNames]);
 
-  
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
@@ -120,64 +155,74 @@ const GameBoard = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+
   const submitGuess = (testSubjectName) => {
-  if (!testSubjectName || gameOver || isAnimating) return;
+    if (!testSubjectName || gameOver || isAnimating) return;
 
 
-  const today = getTodayDate();
-  const cachedDaily = localStorage.getItem('characterDaily');
-  if (cachedDaily) {
-    const { date } = JSON.parse(cachedDaily);
-    if (date !== today) {
-      window.location.reload();
-      return;
+    const today = getTodayDate();
+    const endless = localStorage.getItem('endlessMode') === 'true';
+    if (!endless) {
+      const cachedDaily = localStorage.getItem('characterDaily');
+      if (cachedDaily) {
+        const { date } = JSON.parse(cachedDaily);
+        if (date !== today) {
+          window.location.reload();
+          return;
+        }
+      }
     }
-  }
     setIsAnimating(true);
     setAnimationCount(0);
     setShowDropdown(false);
-  
-  const guessedTestSubject = testSubjects.find(c => c.name === testSubjectName);
-  if (!guessedTestSubject) {
-    setMessage('Invalid test subject name');
-    return;
-  }
+
+    const guessedTestSubject = testSubjects.find(c => c.name === testSubjectName);
+    if (!guessedTestSubject) {
+      setMessage('Invalid test subject name');
+      return;
+    }
 
 
-  const result = compareTestSubject(guessedTestSubject, targetTestSubject);
+    const result = compareTestSubject(guessedTestSubject, targetTestSubject);
 
 
-  const updatedGuesses = [{ name: testSubjectName, feedback: result.feedback }, ...guesses];
-  const newTotalGuesses = updatedGuesses.length;
-  let newGameOver = false;
-  let newMessage = '';
+    const updatedGuesses = [{ name: testSubjectName, feedback: result.feedback }, ...guesses];
+    const newTotalGuesses = updatedGuesses.length;
+    let newGameOver = false;
+    let newMessage = '';
 
-  if (result.isCorrect) {
-    newGameOver = true;
-    newMessage = `You got it! The test subject was ${testSubjectName}`;
-  } else if (newTotalGuesses >= 10) { 
-    newGameOver = true;
-    newMessage = `Game over! The answer was ${targetTestSubject.name}`;
-  }
+    if (result.isCorrect) {
+      newGameOver = true;
+      newMessage = `You got it! The test subject was ${testSubjectName}`;
+    } else if (newTotalGuesses >= 10) {
+      newGameOver = true;
+      newMessage = `Game over! The answer was ${targetTestSubject.name}`;
+    }
 
-  setGuesses(updatedGuesses);
-  setGuessedNames(prev => new Set(prev).add(testSubjectName));
-  setInputValue('');
+    setGuesses(updatedGuesses);
+    setGuessedNames(prev => new Set(prev).add(testSubjectName));
+    setInputValue('');
 
 
-  if (newGameOver) {
-    setGameOver(true);
-    setMessage(newMessage);
-    setPendingGameEnd({ isCorrect: result.isCorrect, message: newMessage, testSubjectName });
-  } else {
-    setGameOver(false);
-    setMessage('');
-    setPendingGameEnd(null);
-  }
+    if (newGameOver) {
+      setGameOver(true);
+      setMessage(newMessage);
+      setPendingGameEnd({ isCorrect: result.isCorrect, message: newMessage, testSubjectName });
+    } else {
+      setGameOver(false);
+      setMessage('');
+      setPendingGameEnd(null);
+    }
 
-  
-  saveGameState(updatedGuesses, newGameOver, newMessage);
-};
+    if (endless) {
+      endlessCache.testSubject.guesses = updatedGuesses;
+      endlessCache.testSubject.gameOver = newGameOver;
+      endlessCache.testSubject.message = newMessage;
+    } else {
+      saveGameState(updatedGuesses, newGameOver, newMessage);
+    }
+
+  };
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);

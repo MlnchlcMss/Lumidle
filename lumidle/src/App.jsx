@@ -46,6 +46,18 @@ function App() {
     }, 2000);
   };
 
+  const [endlessMode, setEndlessMode] = useState(() => {
+    const saved = localStorage.getItem('endlessMode');
+    return saved === 'true';
+  });
+
+  const toggleEndlessMode = () => {
+    const newMode = !endlessMode;
+    setEndlessMode(newMode);
+    localStorage.setItem('endlessMode', newMode);
+    window.location.reload();
+  };
+
   useEffect(() => {
     const todayStr = getTodayDate();
     getSidebarDate();
@@ -90,6 +102,7 @@ function App() {
     };
   }, []);
 
+
   return (
     <Router>
       <div className="app-container">
@@ -127,6 +140,22 @@ function App() {
                 <span className="nav-text">SFX</span>
               </span>
             </NavLink>
+            <div className="endless-mode-toggle">
+              <label className="toggle-label">
+                <span>Endless Mode</span>
+                <div className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={endlessMode}
+                    onChange={toggleEndlessMode}
+                  />
+                  <span className="toggle-slider"></span>
+                </div>
+              </label>
+              <p className="endless-mode-note">
+                Random puzzle on each refresh. Progress not saved.
+              </p>
+            </div>
             <div className={`sidebar-footer ${mobileMenuOpen ? 'open' : ''}`}>
               <div className="footer-socials">
                 <div
@@ -135,7 +164,7 @@ function App() {
                   onClick={copyEmail}>
                   <img src="/socials/email.svg" alt="Email" className="social-icon-img" />
                 </div>
-              
+
               </div>
               <div className="footer-trademark">
                 Not affiliated with Nimble Neuron. Eternal Return is a trademark of Nimble Neuron, inc. or its affiliates.

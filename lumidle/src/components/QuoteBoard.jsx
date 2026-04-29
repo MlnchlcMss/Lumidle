@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './QuoteBoard.css';
-import {quotes} from '../data/quotes';
+import { quotes } from '../data/quotes';
 import { getDailyQuote } from '../utils/daily';
+import { endlessCache } from '../utils/endlessCache';
 
 const QuoteBoard = () => {
   const [quote, setQuote] = useState('');
@@ -40,6 +41,18 @@ const QuoteBoard = () => {
     return formatter.format(now);
   };
 
+  const getEndlessQuote = () => {
+    const key = 'endless_quote_sua_pics';
+    const stored = sessionStorage.getItem(key);
+    if (stored) {
+      return JSON.parse(stored);
+    } else {
+      const randomIndex = Math.floor(Math.random() * quotes.length);
+      const randomQuote = quotes[randomIndex];
+      sessionStorage.setItem(key, JSON.stringify(randomQuote));
+      return randomQuote;
+    }
+  };
 
   const triggerWinConfetti = () => {
     const confettiContainer = document.createElement('div');
@@ -107,9 +120,6 @@ const QuoteBoard = () => {
     }
   };
 
-  
-
-
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target) &&
@@ -123,6 +133,28 @@ const QuoteBoard = () => {
 
   useEffect(() => {
     const today = getTodayDate();
+
+    const endless = localStorage.getItem('endlessMode') === 'true';
+    if (endless) {
+      if (!endlessCache.quote.data) {
+        const randomIndex = Math.floor(Math.random() * quotes.length);
+        endlessCache.quote.data = quotes[randomIndex];
+        endlessCache.quote.guesses = [];
+        endlessCache.quote.gameOver = false;
+        endlessCache.quote.message = '';
+      }
+      const cached = endlessCache.quote;
+      setQuote(cached.data.text);
+      setTargetSpeaker(cached.data.speaker);
+      setAllTestSubjects([...new Set(quotes.map(q => q.speaker))]);
+      setFilteredTestSubjects([...new Set(quotes.map(q => q.speaker))]);
+      setGuesses(cached.guesses);
+      setGameOver(cached.gameOver);
+      setMessage(cached.message);
+      setGuessedNames(new Set(cached.guesses.map(g => g.name)));
+      return;
+    }
+
     const stored = localStorage.getItem('quoteGameState');
     if (stored) {
       try {
@@ -138,14 +170,14 @@ const QuoteBoard = () => {
       } catch (e) { }
     }
 
-      const daily = getDailyQuote(quotes);
-      setQuote(daily.text);
-      setTargetSpeaker(daily.speaker);  
+    const daily = getDailyQuote(quotes);
+    setQuote(daily.text);
+    setTargetSpeaker(daily.speaker);
 
-      localStorage.setItem('quoteDaily', JSON.stringify({ date: today }));
-      const allSpeakers = [...new Set(quotes.map(q => q.speaker))];
-      setAllTestSubjects(allSpeakers);
-      setFilteredTestSubjects(allSpeakers);
+    localStorage.setItem('quoteDaily', JSON.stringify({ date: today }));
+    const allSpeakers = [...new Set(quotes.map(q => q.speaker))];
+    setAllTestSubjects(allSpeakers);
+    setFilteredTestSubjects(allSpeakers);
 
   }, []);
 
@@ -179,59 +211,66 @@ const QuoteBoard = () => {
   };
 
   const submitGuess = (testSubjectName) => {
-  if (!testSubjectName || gameOver || isAnimating) return;
-
-  const today = getTodayDate();
-  const cachedQuote = localStorage.getItem('quoteDaily');
-  if (cachedQuote) {
-    const { date } = JSON.parse(cachedQuote);
-    if (date !== today) {
-      window.location.reload();
-      return;
+    if (!testSubjectName || gameOver || isAnimating) return;
+    const endless = localStorage.getItem('endlessMode') === 'true';
+    const today = getTodayDate();
+    if (!endless) {
+      const cachedQuote = localStorage.getItem('quoteDaily');
+      if (cachedQuote) {
+        const { date } = JSON.parse(cachedQuote);
+        if (date !== today) {
+          window.location.reload();
+          return;
+        }
+      }
     }
-  }
+    setIsAnimating(true);
+    setAnimationCount(0);
+    setShowDropdown(false);
 
-  setIsAnimating(true);
-  setAnimationCount(0);
-  setShowDropdown(false);
 
-  
-  const isCorrect = testSubjectName === targetSpeaker;
+    const isCorrect = testSubjectName === targetSpeaker;
 
-  const updatedGuesses = [{ name: testSubjectName, correct: isCorrect }, ...guesses];
-  const newTotal = updatedGuesses.length;
-  let newGameOver = false;
-  let newMessage = '';
+    const updatedGuesses = [{ name: testSubjectName, correct: isCorrect }, ...guesses];
+    const newTotal = updatedGuesses.length;
+    let newGameOver = false;
+    let newMessage = '';
 
-  if (isCorrect) {
-    newGameOver = true;
-    newMessage = `You got it! The speaker was ${testSubjectName}`;
-  } else if (newTotal >= 5) { 
-    newGameOver = true;
-    newMessage = `Game over! The answer was ${targetSpeaker}`;
-  }
+    if (isCorrect) {
+      newGameOver = true;
+      newMessage = `You got it! The speaker was ${testSubjectName}`;
+    } else if (newTotal >= 5) {
+      newGameOver = true;
+      newMessage = `Game over! The answer was ${targetSpeaker}`;
+    }
 
-  setGuesses(updatedGuesses);
-  setGuessedNames(prev => new Set(prev).add(testSubjectName));
+    setGuesses(updatedGuesses);
+    setGuessedNames(prev => new Set(prev).add(testSubjectName));
 
-  if (newGameOver) {
-    setGameOver(true);
-    setMessage(newMessage);
-    setPendingGameEnd({ isCorrect, message: newMessage, testSubjectName });
-  } else {
-    setGameOver(false);
-    setMessage('');
-    setPendingGameEnd(null);
-  }
+    if (newGameOver) {
+      setGameOver(true);
+      setMessage(newMessage);
+      setPendingGameEnd({ isCorrect, message: newMessage, testSubjectName });
+    } else {
+      setGameOver(false);
+      setMessage('');
+      setPendingGameEnd(null);
+    }
 
-  setInputValue('');
-  saveGameState(updatedGuesses, newGameOver, newMessage);
-};
+    setInputValue('');
+    if (endless) {
+      endlessCache.quote.guesses = updatedGuesses;
+      endlessCache.quote.gameOver = newGameOver;
+      endlessCache.quote.message = newMessage;
+    } else {
+      saveGameState(updatedGuesses, newGameOver, newMessage);
+    }
+  };
 
   const handleCellAnimationEnd = () => {
     setAnimationCount(prev => {
       const newCount = prev + 1;
-      if (newCount >= 1) { 
+      if (newCount >= 1) {
         setIsAnimating(false);
         if (pendingGameEnd) {
           setGameOver(true);
