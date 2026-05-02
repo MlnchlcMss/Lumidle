@@ -16,7 +16,7 @@ export const testSubjects = [
     weapon: 'Rapier',
     roles: ['Mage'],
     difficulty: 5,
-    releaseDate: new Date('2023-03-03'),
+    releaseDate: new Date('2021-03-02'),
     age: 25,
     scaling1: { name: 'SKILL AMP', value: 4.6 },
     scaling2: { name: 'ASPD', value: 3.5 }
@@ -27,7 +27,7 @@ export const testSubjects = [
     weapon: 'Bat',
     roles: ['Fighter'],
     difficulty: 5,
-    releaseDate: new Date('2023-08-31'),
+    releaseDate: new Date('2021-03-02'),
     age: 25,
     scaling1: { name: 'SKILL AMP', value: 4.5 },
     scaling2: { name: 'ASPD', value: 4.0  }
