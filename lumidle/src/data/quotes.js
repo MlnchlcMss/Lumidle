@@ -11,6 +11,7 @@ export const quotes = [
   { text: "I'll show them the best inventor of the 21st century.", speaker: "Barbara" },
   { text: "I'll fire only at the beasts.", speaker: "Bernice" },
   { text: "I'm curious... what's their blood taste like?", speaker: "Bianca" },
+  { text: "Unique under heaven and across mountains! The strongest, greatest Dokkaebi has arrived!", speaker: "Bihyung" },
   { text: "It takes a monster to fight one.", speaker: "Blair" },
   { text: "Ah, mi vida, try not to fall in love.", speaker: "Camilo" },
   { text: "Who, me? Okay then!", speaker: "Cathy" },

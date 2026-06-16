@@ -70,6 +70,12 @@ export const sfxList = [
   { testSubject: 'Bianca', skillName: "Circulation", sfxFile: '/sfx/bianca-e.mp3', iconFile: '/icons/58.webp' },
   { testSubject: 'Bianca', skillName: "Reign of the Vampire Queen", sfxFile: '/sfx/bianca-r.mp3', iconFile: '/icons/59.webp' },
   
+  { testSubject: 'Bihyung', skillName: "Dokkaebi Light", sfxFile: '/sfx/bihyung-p.mp3', iconFile: '/icons/425.webp' },
+  { testSubject: 'Bihyung', skillName: "Ttuk-ttak!", sfxFile: '/sfx/bihyung-q.mp3', iconFile: '/icons/426.webp' },
+  { testSubject: 'Bihyung', skillName: "Pay the Price!", sfxFile: '/sfx/bihyung-w.mp3', iconFile: '/icons/427.webp' },
+  { testSubject: 'Bihyung', skillName: "Winner Takes All", sfxFile: '/sfx/bihyung-e.mp3', iconFile: '/icons/428.webp' },
+  { testSubject: 'Bihyung', skillName: "Let's Have a Blast!", sfxFile: '/sfx/bihyung-r.mp3', iconFile: '/icons/429.webp' },
+  
   { testSubject: 'Blair', skillName: "Shift Rush", sfxFile: '/sfx/blair-d.mp3', iconFile: '/icons/60.webp' },
   { testSubject: 'Blair', skillName: "Double Strike / Double Swing", sfxFile: '/sfx/blair-q.mp3', iconFile: '/icons/61.webp' },
   { testSubject: 'Blair', skillName: "Execution / Blade Storm", sfxFile: '/sfx/blair-w.mp3', iconFile: '/icons/62.webp' },

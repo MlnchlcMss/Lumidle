@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import GameBoard from './components/GameBoard';
 import QuoteBoard from './components/QuoteBoard';
 import SFXBoard from './components/SFXBoard';
+import PatchNotesModal from './components/PatchNotesModal';
 import './App.css';
 
 function App() {
@@ -11,7 +12,7 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [tooltipText, setTooltipText] = useState('Send your inquiries/feedback here');
   const timeoutRef = useRef(null);
-
+  const [showPatchNotes, setShowPatchNotes] = useState(false);
   const getTodayDate = () => {
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -166,6 +167,9 @@ function App() {
                 </div>
 
               </div>
+              <button className="patch-notes-btn" onClick={() => setShowPatchNotes(true)}>
+                📜 Patch Notes
+              </button>
               <div className="footer-trademark">
                 Not affiliated with Nimble Neuron. Eternal Return is a trademark of Nimble Neuron, inc. or its affiliates.
                 Inspired by Kisekidle.
@@ -183,6 +187,7 @@ function App() {
             <Route path="*" element={<Navigate to="/character" replace />} />
           </Routes>
         </main>
+        {showPatchNotes && <PatchNotesModal onClose={() => setShowPatchNotes(false)} />}
       </div>
     </Router>
   );
