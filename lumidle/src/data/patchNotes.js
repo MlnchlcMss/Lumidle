@@ -5,6 +5,10 @@ export const patchNotes = [
     "Added Bihyung to lumidle. 🐗",
     "Updated scalings",
 ]},
+{ version: "v1.0.1", date: "2026-07-01",
+  changes: [
+    "Added Craver to lumidle. 🔫",
+]},
 
   
 

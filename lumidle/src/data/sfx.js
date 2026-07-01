@@ -123,6 +123,12 @@ export const sfxList = [
   { testSubject: 'Coraline', skillName: "Shackles of Sin", sfxFile: '/sfx/coraline-e.mp3', iconFile: '/icons/423.webp' },
   { testSubject: 'Coraline', skillName: "Refracted Afterimage", sfxFile: '/sfx/coraline-r.mp3', iconFile: '/icons/424.webp' },
   
+  { testSubject: 'Craver', skillName: "Desperado", sfxFile: '/sfx/craver-p.mp3', iconFile: '/icons/430.webp' },
+  { testSubject: 'Craver', skillName: "Double Tap / Focus Shot", sfxFile: '/sfx/craver-q.mp3', iconFile: '/icons/431.webp' },
+  { testSubject: 'Craver', skillName: "Sweep Kick / Backflip", sfxFile: '/sfx/craver-w.mp3', iconFile: '/icons/432.webp' },
+  { testSubject: 'Craver', skillName: "Combat Roll / Quick Step", sfxFile: '/sfx/craver-e.mp3', iconFile: '/icons/433.webp' },
+  { testSubject: 'Craver', skillName: "Showdown!", sfxFile: '/sfx/craver-r.mp3', iconFile: '/icons/434.webp' },
+  
   { testSubject: 'Daniel', skillName: "Dusk Shears", sfxFile: '/sfx/daniel-q.mp3', iconFile: '/icons/94.webp' },
   { testSubject: 'Daniel', skillName: "Inspiration", sfxFile: '/sfx/daniel-w.mp3', iconFile: '/icons/95.webp' },
   { testSubject: 'Daniel', skillName: "Shadow Glide", sfxFile: '/sfx/daniel-e.mp3', iconFile: '/icons/96.webp' },

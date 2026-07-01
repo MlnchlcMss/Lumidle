@@ -319,6 +319,17 @@ export const testSubjects = [
     scaling2: { name: 'ASPD', value: 3.0  }
   },
   {
+    name: 'Craver',
+    gender: 'Male',
+    weapon: 'Pistol',
+    roles: ['Mage','Ranged DPS'],
+    difficulty: 4,
+    releaseDate: new Date('2026-06-25'),
+    age: 24,
+    scaling1: { name: 'SKILL AMP', value: 4.2 },
+    scaling2: { name: 'ASPD', value: 5.0  }
+  },
+  {
     name: 'Daniel',
     gender: 'Male',
     weapon: 'Dagger',

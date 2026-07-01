@@ -20,6 +20,7 @@ export const quotes = [
   { text: "The time for salvation has passed.", speaker: "Chiara" }, 
   { text: "You saw Nina moving? Hah, good one!.", speaker: "Chloe" }, 
   { text: "Light or shadow... Which side do you fall on?", speaker: "Coraline" },
+  { text: "Don't try anything stupid. We see right through you.", speaker: "Craver" },
   { text: "You need a sharp pin to fix a butterfly to a wall", speaker: "Daniel" }, 
   { text: "I'll just take everything you have.", speaker: "Darko" }, 
   { text: "Quit stalling, let's go! Either way, it's a waste of time.", speaker: "Debi & Marlene" }, 
